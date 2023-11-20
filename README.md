@@ -4,6 +4,7 @@
 * Java 17
 * Spring Boot 3.1.5
 * Maven (with local repository reference)
+* Postgres 16
 
 ## Structure is as follows
 * `wisercat-test-filters-api` - Main business logic
