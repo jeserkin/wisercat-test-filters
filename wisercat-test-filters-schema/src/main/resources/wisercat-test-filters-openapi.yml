@@ -1,0 +1,208 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: support@wisercat.eu
+  description: |
+    An API for reading/storing Wisercat Test Assignment filters.
+
+    ### Changelog
+    1.0.0 - Initially published draft.
+    
+    #### HTTP Status Codes
+    - 200 - OK.
+  title: Wisercat Filters API
+  version: 1.0.0
+
+servers:
+  - url: http://callcenter.wisercat.eu:8443/v1
+
+tags:
+  - name: Filter
+    description: >-
+      Operations related to querying or adding filter/s
+
+paths:
+  /filter:
+    post:
+      tags:
+        - Filter
+      description: Endpoint is used for adding new filter
+      operationId: addFilter
+      requestBody:
+        description: Filter with corresponding criteria request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/addFilterRequest"
+      responses:
+        200:
+          description: Filter and related criteria information response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/filterResponse"
+        "404":
+          $ref: "#/components/responses/filterNotFound"
+        "422":
+          $ref: "#/components/responses/unprocessableEntity"
+        "500":
+          $ref: "#/components/responses/internalServiceError"
+
+  /filters:
+    get:
+      tags:
+        - Filter
+      description: Endpoint is used for querying all filters
+      operationId: getFilters
+      responses:
+        200:
+          description: Filter and related criteria information response. Response may contain one or more filters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/filterResponse"
+        "404":
+          $ref: "#/components/responses/filterNotFound"
+        "422":
+          $ref: "#/components/responses/unprocessableEntity"
+        "500":
+          $ref: "#/components/responses/internalServiceError"
+
+components:
+  #  headers:
+
+  # parameters:
+
+  schemas:
+    addFilterRequest:
+      description: Filter and related criteria addition request.
+      type: object
+      required:
+        - name
+        - criteria
+        - selection
+      properties:
+        name:
+          $ref: "#/components/schemas/filterName"
+        criteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/addCriteriaItem"
+        selection:
+          $ref: "#/components/schemas/filterSelection"
+
+    addCriteriaItem:
+      description: Criteria for addition.
+      type: object
+      required:
+        - type
+        - parameter
+        - value
+      properties:
+        type:
+          $ref: "#/components/schemas/criteriaType"
+        parameter:
+          $ref: "#/components/schemas/criteriaParameter"
+        value:
+          description: Value of a given criteria
+          type: string
+
+    filterResponse:
+      description: Filter information response
+      type: object
+      required:
+        - name
+        - criteria
+        - selection
+      properties:
+        filterName:
+          $ref: "#/components/schemas/filterName"
+        criteria:
+          description: Filter criteria
+          type: array
+          items:
+            $ref: "#/components/schemas/criteriaItem"
+        selection:
+          $ref: "#/components/schemas/filterSelection"
+
+    filterName:
+      description: Name of a filter
+      type: string
+
+    filterSelection:
+      description: Some random radio button selection choice
+      type: integer
+
+    criteriaItem:
+      description: Filters criteria
+      type: object
+      properties:
+        type:
+          $ref: "#/components/schemas/criteriaType"
+        parameter:
+          $ref: "#/components/schemas/criteriaParameter"
+        value:
+          description: Value of a given criteria
+          type: string
+
+    criteriaType:
+      description: Type of a filter criteria
+      type: string
+      example: Amount
+      enum:
+        - Amount
+        - Title
+        - Date
+
+    criteriaParameter:
+      description: Parameter of a filter criteria based on type
+      type: string
+      example: More
+      enum:
+        - More
+        - Less
+        - From
+        - To
+        - Starts with
+        - Ends with
+
+    errorResponse:
+      description: Response in case of an error (HTTP status code not 200)
+      type: object
+      required:
+        - errorCode
+        - errorMessage
+      properties:
+        errorMessage:
+          type: string
+          description: In case of error - detailed error message
+          example: Something went wrong
+        errorCode:
+          type: string
+          description: In case of error - error code
+          example: INTERNAL_SERVER_ERROR
+
+  responses:
+    filterNotFound:
+      description: Filter not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorResponse"
+
+    unprocessableEntity:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorResponse"
+
+    internalServiceError:
+      description: Internal server error/ technical error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/errorResponse"
